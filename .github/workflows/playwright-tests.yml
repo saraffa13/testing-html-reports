@@ -78,7 +78,7 @@ jobs:
         if: always()
         id: set-dest
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
+          if [ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]; then
             echo "dest=playwright-reports/pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           else
             echo "dest=playwright-reports/latest" >> $GITHUB_OUTPUT
