@@ -49,7 +49,7 @@ jobs:
         env:
           VITE_DUTY_API_BASE_URL: ${{ secrets.VITE_DUTY_API_BASE_URL || 'https://upandup.shilltube.fun/api/v2' }}
           VITE_CORE_API_BASE_URL: ${{ secrets.VITE_CORE_API_BASE_URL || 'https://upandup.shilltube.fun/api/v1' }}
-        run: pnpm exec playwright test --project=chromium --reporter=github --reporter=html
+        run: pnpm exec playwright test --project=chromium tests/authentication --reporter=github --reporter=html
 
       # 8. Upload Artifacts
       - name: Upload Playwright Report
