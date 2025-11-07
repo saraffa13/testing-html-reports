@@ -45,8 +45,8 @@ jobs:
       - name: Execute Playwright E2E Tests
         # If any test fails, this step fails, and the PR cannot be merged.
         env:
-          VITE_DUTY_API_BASE_URL: ${{ secrets.VITE_DUTY_API_BASE_URL }}
-          VITE_CORE_API_BASE_URL: ${{ secrets.VITE_CORE_API_BASE_URL }}
+          VITE_DUTY_API_BASE_URL: ${{ secrets.VITE_DUTY_API_BASE_URL || 'https://upandup.shilltube.fun/api/v2' }}
+          VITE_CORE_API_BASE_URL: ${{ secrets.VITE_CORE_API_BASE_URL || 'https://upandup.shilltube.fun/api/v1' }}
         run: pnpm exec playwright test --project=chromium --reporter=github --reporter=html
 
       # 8. Upload Artifacts
@@ -66,3 +66,24 @@ jobs:
           name: playwright-test-results
           path: test-results/
           retention-days: 5
+
+      # 10. Set destination directory for GitHub Pages
+      - name: Set Report Destination
+        if: always()
+        id: set-dest
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "dest=playwright-reports/pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "dest=playwright-reports/latest" >> $GITHUB_OUTPUT
+          fi
+
+      # 11. Deploy Playwright Report to GitHub Pages
+      - name: Deploy Playwright Report to GitHub Pages
+        if: always() # Deploy even if tests fail
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          destination_dir: ${{ steps.set-dest.outputs.dest }}
+          keep_files: true # Keep old reports for history
