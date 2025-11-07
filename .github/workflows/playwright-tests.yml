@@ -1,0 +1,68 @@
+name: Playwright Test Gate CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  repository_dispatch:
+    types: [backend_push]
+  workflow_dispatch:
+
+jobs:
+  playwright_test_gate:
+    name: Build, Test & Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.5
+
+      # 3. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      # 4. Install Dependencies
+      - name: Install Project Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # 5. Install Playwright Browsers
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      # 6. Build Project
+      - name: Run Production Build
+        run: pnpm run build
+
+      # 7. RUN THE TEST GATE
+      - name: Execute Playwright E2E Tests
+        # If any test fails, this step fails, and the PR cannot be merged.
+        env:
+          VITE_DUTY_API_BASE_URL: ${{ secrets.VITE_DUTY_API_BASE_URL }}
+          VITE_CORE_API_BASE_URL: ${{ secrets.VITE_CORE_API_BASE_URL }}
+        run: pnpm exec playwright test --project=chromium --reporter=github --reporter=html
+
+      # 8. Upload Artifacts
+      - name: Upload Playwright Report
+        if: always() # IMPORTANT: Upload the report even if the tests failed!
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-report
+          path: playwright-report/
+          retention-days: 5
+
+      # 9. Upload Test Results
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 5

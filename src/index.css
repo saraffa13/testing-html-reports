@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mukta: Mukta;
+}
+
+@font-face {
+  font-family: "Mukta";
+  src: url("/font/Mukta-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+}
+
+.font-mukta {
+  font-family: "Mukta", sans-serif;
+}
