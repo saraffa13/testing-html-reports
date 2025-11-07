@@ -3,6 +3,8 @@ name: Playwright Test Gate CI
 on:
   pull_request:
     branches: [main, master]
+  push:
+    branches: [main, master]
   repository_dispatch:
     types: [backend_push]
   workflow_dispatch:
